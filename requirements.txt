@@ -5,3 +5,4 @@ transformers
 pypdf
 torch
 ollama
+docx
