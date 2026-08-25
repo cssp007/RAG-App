@@ -11,35 +11,33 @@ permissions:
   contents: write
 
 env:
-  DOCKER_IMAGE: cssp007143/rag-app
+  DOCKER_IMAGE: cssp007/rag-app
 
 jobs:
 
   build:
-    name: Build, Push and Update GitOps
+    name: Build Docker Image
     runs-on: ubuntu-latest
 
     steps:
 
-      # --------------------------------------------------
-      # 1. Checkout application source code
-      # --------------------------------------------------
+      # ----------------------------------------
+      # 1. Checkout source code
+      # ----------------------------------------
       - name: Checkout source code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
 
-      # --------------------------------------------------
+      # ----------------------------------------
       # 2. Setup Docker Buildx
-      # --------------------------------------------------
+      # ----------------------------------------
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
 
-      # --------------------------------------------------
+      # ----------------------------------------
       # 3. Login to Docker Hub
-      # --------------------------------------------------
+      # ----------------------------------------
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -47,96 +45,74 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 
-      # --------------------------------------------------
-      # 4. Generate Docker image metadata
-      # --------------------------------------------------
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_IMAGE }}
-          tags: |
-            type=sha,prefix=sha-
-            type=raw,value=latest
-
-
-      # --------------------------------------------------
-      # 5. Build Docker image
-      # --------------------------------------------------
+      # ----------------------------------------
+      # 4. Build Docker image
+      # ----------------------------------------
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
-          push: false
-
-          tags: |
-            ${{ steps.meta.outputs.tags }}
-
-          labels: |
-            ${{ steps.meta.outputs.labels }}
-
-          # GitHub Actions Docker cache
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-
-      # --------------------------------------------------
-      # 6. Save Docker image as artifact
-      # --------------------------------------------------
-      - name: Save Docker image
-        run: |
-          docker pull ${{ env.DOCKER_IMAGE }}:latest || true
-
-          docker save \
-            ${{ env.DOCKER_IMAGE }}:latest \
-            -o rag-app.tar
-
-
-      - name: Upload Docker image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rag-app-docker-image
-          path: rag-app.tar
-          retention-days: 1
-
-
-      # --------------------------------------------------
-      # 7. Build and Push Docker image to Docker Hub
-      # --------------------------------------------------
-      - name: Build and Push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-
-          push: true
 
           tags: |
             ${{ env.DOCKER_IMAGE }}:latest
             ${{ env.DOCKER_IMAGE }}:sha-${{ github.sha }}
 
-          labels: |
-            ${{ steps.meta.outputs.labels }}
+          # Export image to Docker daemon
+          load: true
 
           # Docker layer cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
 
-      # --------------------------------------------------
-      # 8. Display image information
-      # --------------------------------------------------
-      - name: Display Docker image
+      # ----------------------------------------
+      # 5. Save Docker image as artifact
+      # ----------------------------------------
+      - name: Save Docker image
         run: |
-          echo "Docker image pushed successfully:"
-          echo "${{ env.DOCKER_IMAGE }}:latest"
-          echo "${{ env.DOCKER_IMAGE }}:sha-${{ github.sha }}"
+          docker save \
+            ${{ env.DOCKER_IMAGE }}:latest \
+            -o /tmp/rag-app.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rag-app-docker-image
+          path: /tmp/rag-app.tar
+          retention-days: 7
 
 
-      # --------------------------------------------------
-      # 9. Checkout GitOps repository
-      # --------------------------------------------------
+      # ----------------------------------------
+      # 6. Push Docker image to Docker Hub
+      # ----------------------------------------
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.DOCKER_IMAGE }}:latest
+          docker push ${{ env.DOCKER_IMAGE }}:sha-${{ github.sha }}
+
+
+      # ----------------------------------------
+      # 7. Display image information
+      # ----------------------------------------
+      - name: Display image information
+        run: |
+          echo "======================================"
+          echo "Docker image pushed successfully"
+          echo "======================================"
+
+          echo "Latest:"
+          echo "docker.io/${DOCKER_IMAGE}:latest"
+
+          echo "Commit:"
+          echo "docker.io/${DOCKER_IMAGE}:sha-${GITHUB_SHA}"
+
+          echo "======================================"
+
+
+      # ----------------------------------------
+      # 8. Checkout GitOps repository
+      # ----------------------------------------
       - name: Checkout GitOps repository
         uses: actions/checkout@v4
         with:
@@ -145,9 +121,9 @@ jobs:
           path: gitops
 
 
-      # --------------------------------------------------
-      # 10. Update image tag in GitOps repository
-      # --------------------------------------------------
+      # ----------------------------------------
+      # 9. Update image in GitOps repository
+      # ----------------------------------------
       - name: Update image tag
         working-directory: gitops
         run: |
@@ -155,17 +131,17 @@ jobs:
           IMAGE_TAG="sha-${GITHUB_SHA}"
 
           echo "Updating image to:"
-          echo "${DOCKER_IMAGE}:${IMAGE_TAG}"
+          echo "docker.io/${DOCKER_IMAGE}:${IMAGE_TAG}"
 
           sed -i \
-            "s|image: docker.io/cssp007143/rag-app:.*|image: docker.io/cssp007143/rag-app:${IMAGE_TAG}|" \
+            "s|image: docker.io/cssp007/rag-app:.*|image: docker.io/cssp007/rag-app:${IMAGE_TAG}|" \
             apps/rag-app/deployment.yaml
 
 
-      # --------------------------------------------------
-      # 11. Commit GitOps change
-      # --------------------------------------------------
-      - name: Commit GitOps changes
+      # ----------------------------------------
+      # 10. Commit GitOps change
+      # ----------------------------------------
+      - name: Commit GitOps change
         working-directory: gitops
         run: |
 
@@ -181,10 +157,10 @@ jobs:
             || echo "No changes to commit"
 
 
-      # --------------------------------------------------
-      # 12. Push GitOps changes
-      # --------------------------------------------------
-      - name: Push GitOps changes
+      # ----------------------------------------
+      # 11. Push GitOps change
+      # ----------------------------------------
+      - name: Push GitOps change
         working-directory: gitops
         run: |
           git push
