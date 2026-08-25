@@ -13,6 +13,7 @@ RUN apt-get update && \
         curl \
         ca-certificates \
         procps \
+        zstd \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Ollama
