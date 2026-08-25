@@ -135,7 +135,7 @@ jobs:
 
           sed -i \
             "s|image: docker.io/cssp007/rag-app:.*|image: docker.io/cssp007/rag-app:${IMAGE_TAG}|" \
-            apps/rag-app/deployment.yaml
+            applications/frontend/base/rollout.yaml
 
 
       # ----------------------------------------
