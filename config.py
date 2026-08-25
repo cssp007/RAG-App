@@ -19,7 +19,7 @@ BASE_DIR = os.path.abspath(
 APP_HOST = (
     os.getenv(
         "APP_HOST",
-        "127.0.0.1"
+        "0.0.0.0"
     )
 )
 
