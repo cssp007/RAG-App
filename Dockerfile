@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# System dependencies
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
@@ -23,11 +23,10 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Application
+# Copy application
 COPY . .
 
 EXPOSE 5000
 EXPOSE 11434
 
-# Start Ollama, download model, then start Flask
-CMD ["sh", "-c", "ollama serve & sleep 5 && ollama pull llama3.2 && python app.py"]
+CMD ["sh", "-c", "ollama serve > /tmp/ollama.log 2>&1 & sleep 5 && ollama pull llama3.2 && python app.py"]
