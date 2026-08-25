@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>AI Document Assistant</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- ======================================
+             HEADER
+        ======================================= -->
+
+        <header class="top-header">
+
+            <div class="brand">
+
+                <div class="logo">
+                    🤖
+                </div>
+
+                <div>
+
+                    <h1>
+                        AI Document Assistant
+                    </h1>
+
+                    <p>
+                        Upload documents and ask questions using AI
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="healthStatus"
+                class="health-status checking"
+            >
+
+                <span class="status-dot"></span>
+
+                <span id="healthText">
+                    Checking...
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <!-- ======================================
+             DASHBOARD
+        ======================================= -->
+
+        <main class="dashboard">
+
+
+            <!-- ==================================
+                 LEFT PANEL
+            =================================== -->
+
+            <section class="left-panel">
+
+
+                <!-- ==================================
+                     UPLOAD CARD
+                =================================== -->
+
+                <div class="card">
+
+                    <div class="card-title">
+
+                        <div class="title-icon">
+                            📄
+                        </div>
+
+                        <div>
+
+                            <h2>
+                                Upload Documents
+                            </h2>
+
+                            <p>
+                                Upload PDF, DOC, DOCX, or TXT files.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        id="uploadArea"
+                        class="upload-area"
+                    >
+
+                        <div class="upload-icon">
+                            📁
+                        </div>
+
+                        <h3>
+                            Drag & Drop Files
+                        </h3>
+
+                        <p>
+                            or select files from your computer
+                        </p>
+
+
+                        <input
+                            type="file"
+                            id="fileInput"
+                            multiple
+                            accept=".pdf,.doc,.docx,.txt"
+                        >
+
+
+                        <label
+                            for="fileInput"
+                            class="file-button"
+                        >
+                            Choose Files
+                        </label>
+
+                    </div>
+
+
+                    <!-- Selected Files -->
+
+                    <div
+                        id="selectedFiles"
+                        class="selected-files"
+                    >
+                    </div>
+
+
+                    <!-- Upload Button -->
+
+                    <button
+                        id="uploadButton"
+                        class="primary-button"
+                        disabled
+                    >
+                        Upload Documents
+                    </button>
+
+
+                    <!-- Result -->
+
+                    <div
+                        id="uploadResult"
+                        class="result-area"
+                    >
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================
+                     DOCUMENT LIST
+                =================================== -->
+
+                <div class="card">
+
+                    <div class="section-header">
+
+                        <div>
+
+                            <h2>
+                                Uploaded Documents
+                            </h2>
+
+                            <p>
+                                Manage your uploaded files
+                            </p>
+
+                        </div>
+
+
+                        <button
+                            id="resetButton"
+                            class="reset-button"
+                        >
+                            Reset All
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        id="documentList"
+                        class="document-list"
+                    >
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==================================
+                 RIGHT PANEL
+            =================================== -->
+
+            <section class="right-panel">
+
+
+                <div class="card">
+
+
+                    <!-- CARD TITLE -->
+
+                    <div class="card-title">
+
+                        <div class="title-icon ai-icon">
+                            ✨
+                        </div>
+
+                        <div>
+
+                            <h2>
+                                Ask AI
+                            </h2>
+
+                            <p>
+                                Ask questions about your uploaded documents.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MODEL SELECTION -->
+
+                    <div class="model-selection">
+
+                        <div class="model-selection-header">
+
+                            <div>
+
+                                <div class="model-label">
+                                    AI Model
+                                </div>
+
+                                <div class="model-description">
+                                    Select the AI model to answer your question.
+                                </div>
+
+                            </div>
+
+
+                            <button
+                                id="refreshModelsButton"
+                                class="refresh-models-button"
+                                title="Refresh Models"
+                                type="button"
+                            >
+                                ↻
+                            </button>
+
+                        </div>
+
+
+                        <select
+                            id="modelSelect"
+                            class="model-select"
+                        >
+                            <option value="">
+                                Loading models...
+                            </option>
+                        </select>
+
+                    </div>
+
+
+                    <!-- QUESTION BOX -->
+
+                    <div class="question-box">
+
+                        <textarea
+                            id="questionInput"
+                            placeholder="Ask a question about your uploaded documents..."
+                        ></textarea>
+
+
+                        <div class="question-footer">
+
+                            <div class="topk-option">
+
+                                <span>
+                                    Search Results:
+                                </span>
+
+
+                                <select id="topKSelect">
+
+                                    <option value="3">
+                                        Top 3
+                                    </option>
+
+                                    <option value="5" selected>
+                                        Top 5
+                                    </option>
+
+                                    <option value="10">
+                                        Top 10
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <button
+                                id="askButton"
+                                class="ask-button"
+                                type="button"
+                            >
+
+                                <span>
+                                    ✨
+                                </span>
+
+                                Ask AI
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- QUERY RESULT -->
+
+                <div
+                    id="queryResult"
+                    class="query-result"
+                >
+
+                    <div class="welcome-answer">
+
+                        <div class="welcome-icon">
+                            🤖
+                        </div>
+
+                        <h2>
+                            Welcome to AI Document Assistant
+                        </h2>
+
+                        <p>
+                            Upload one or more documents and ask questions.
+                            The AI will search through your documents and
+                            generate an answer based on the available content.
+                        </p>
+
+
+                        <div class="workflow">
+
+                            <div>
+                                <span>📁</span>
+                                Upload
+                            </div>
+
+                            <span class="arrow">
+                                →
+                            </span>
+
+                            <div>
+                                <span>🔍</span>
+                                Search
+                            </div>
+
+                            <span class="arrow">
+                                →
+                            </span>
+
+                            <div>
+                                <span>🤖</span>
+                                Ask AI
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- ======================================
+         DELETE MODAL
+    ======================================= -->
+
+    <div
+        id="deleteModal"
+        class="modal-overlay"
+    >
+
+        <div class="delete-modal">
+
+            <div class="modal-icon">
+                🗑️
+            </div>
+
+            <h2>
+                Delete Document?
+            </h2>
+
+            <p>
+
+                Are you sure you want to delete:
+
+                <strong id="deleteFileName">
+                </strong>
+
+            </p>
+
+
+            <span class="modal-warning">
+                This action cannot be undone.
+            </span>
+
+
+            <div class="modal-actions">
+
+                <button
+                    id="cancelDeleteButton"
+                    class="modal-cancel-button"
+                    type="button"
+                >
+                    Cancel
+                </button>
+
+
+                <button
+                    id="confirmDeleteButton"
+                    class="modal-delete-button"
+                    type="button"
+                >
+                    Delete
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ======================================
+         TOAST
+    ======================================= -->
+
+    <div
+        id="toast"
+        class="toast"
+    >
+
+        <div
+            id="toastIcon"
+            class="toast-icon"
+        >
+            ✓
+        </div>
+
+
+        <span id="toastMessage">
+        </span>
+
+    </div>
+
+
+    <!-- ======================================
+         UPLOAD PROCESSING MODAL
+    ======================================= -->
+
+    <div
+        id="uploadModal"
+        class="upload-modal"
+    >
+
+        <div class="upload-modal-backdrop">
+        </div>
+
+
+        <div class="upload-modal-card">
+
+
+            <!-- HEADER -->
+
+            <div class="upload-modal-header">
+
+                <div class="upload-modal-icon">
+                    📄
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        Processing Documents
+                    </h2>
+
+                    <p>
+                        Please wait while we process your files.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- FILE LIST -->
+
+            <div
+                id="processingFiles"
+                class="upload-processing-files"
+            >
+            </div>
+
+
+            <!-- PROCESSING STEPS -->
+
+            <div class="processing-steps">
+
+
+                <div
+                    id="step1"
+                    class="processing-step"
+                >
+
+                    <div class="step-icon">
+                        📤
+                    </div>
+
+
+                    <div class="step-content">
+
+                        <strong>
+                            Uploading Files
+                        </strong>
+
+                        <span>
+                            Uploading selected documents
+                        </span>
+
+                    </div>
+
+
+                    <div class="step-status">
+                        <span class="step-number">1</span>
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="step2"
+                    class="processing-step"
+                >
+
+                    <div class="step-icon">
+                        📖
+                    </div>
+
+
+                    <div class="step-content">
+
+                        <strong>
+                            Reading Documents
+                        </strong>
+
+                        <span>
+                            Extracting text from documents
+                        </span>
+
+                    </div>
+
+
+                    <div class="step-status">
+                        <span class="step-number">2</span>
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="step3"
+                    class="processing-step"
+                >
+
+                    <div class="step-icon">
+                        🧩
+                    </div>
+
+
+                    <div class="step-content">
+
+                        <strong>
+                            Creating Chunks
+                        </strong>
+
+                        <span>
+                            Splitting documents into searchable sections
+                        </span>
+
+                    </div>
+
+
+                    <div class="step-status">
+                        <span class="step-number">3</span>
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="step4"
+                    class="processing-step"
+                >
+
+                    <div class="step-icon">
+                        🧠
+                    </div>
+
+
+                    <div class="step-content">
+
+                        <strong>
+                            Creating Embeddings
+                        </strong>
+
+                        <span>
+                            Preparing documents for AI search
+                        </span>
+
+                    </div>
+
+
+                    <div class="step-status">
+                        <span class="step-number">4</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PROGRESS -->
+
+            <div class="upload-progress-container">
+
+                <div class="upload-progress-header">
+
+                    <span id="progressText">
+                        Preparing...
+                    </span>
+
+
+                    <strong id="progressPercentage">
+                        0%
+                    </strong>
+
+                </div>
+
+
+                <div class="upload-progress-track">
+
+                    <div
+                        id="progressBar"
+                        class="upload-progress-bar"
+                    >
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FOOTER -->
+
+            <div class="upload-modal-footer">
+
+                <div class="upload-processing-message">
+
+                    <span class="pulse-dot">
+                    </span>
+
+                    <span id="processingMessage">
+                        Processing your documents...
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script
+        src="{{ url_for('static', filename='js/script.js') }}"
+    ></script>
+
+</body>
+
+</html>
