@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 env:
-  DOCKER_IMAGE: cssp007/rag-app
+  DOCKER_IMAGE: cssp007143/rag-app
 
 jobs:
 
